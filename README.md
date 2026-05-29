@@ -32,8 +32,8 @@ create policy "Users can manage their own state"
 on public.workbuddy_state
 for all
 to authenticated
-using (auth.uid() = user_id)
-with check (auth.uid() = user_id);
+using ((select auth.uid()) = user_id)
+with check ((select auth.uid()) = user_id);
 ```
 
 ## 说明

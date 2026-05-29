@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>课时费计算器</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,sans-serif;background:#f8fafc;color:#1e293b}
+    :root{--p:#4f46e5;--pd:#4338ca;--s:#7c3aed;--bg:#f8fafc;--card:#fff;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;--danger:#ef4444;--accent:#f59e0b;--shadow:0 1px 3px rgba(0,0,0,.1)}
+    #loginPage{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--p),var(--s));padding:20px}
+    .login-card,.card{background:var(--card);border-radius:16px;box-shadow:var(--shadow)}
+    .login-card{max-width:380px;width:100%;padding:40px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+    h1,h2,h3,.title{font-family:Nunito,sans-serif}
+    .login-card h1{margin:0 0 8px;color:var(--p);font-size:1.8rem}
+    .subtitle,.hint{color:var(--muted)}
+    input,select,button{font:inherit}
+    .login-card input,.settings-section input,.form-group input,.form-group select{width:100%;height:50px;padding:0 16px;border:1px solid var(--border);border-radius:10px;margin-bottom:14px}
+    .login-card button,.btn-primary,.btn-sm,.btn-danger{border:0;border-radius:10px;cursor:pointer}
+    .login-card button,.btn-primary{width:100%;height:50px;background:var(--p);color:#fff;font-weight:700}
+    .login-error{color:var(--danger);min-height:20px;font-size:.85rem;margin-bottom:8px}
+    #mainApp{display:none;min-height:100vh}
+    .app-header{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .app-header h1{margin:0;font-size:1.3rem;color:var(--p);display:flex;align-items:center;gap:8px}
+    .nav-tabs{display:flex;gap:6px;flex-wrap:wrap}
+    .nav-tab,.logout-btn,.filter-chip,.month-nav button,.calendar-nav button,.clear-btn{background:#fff;border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:8px;cursor:pointer}
+    .nav-tab.active{background:var(--p);color:#fff;border-color:var(--p)}
+    .app-content{max-width:1100px;margin:0 auto;padding:16px 20px 40px}
+    .tab-content{display:none}.tab-content.active{display:block}
+    .calendar-nav,.month-nav{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:12px}
+    .calendar-month,.month-display{font-family:Nunito,sans-serif;font-weight:800}
+    .filter-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+    .filter-section{display:flex;flex-wrap:wrap;gap:4px;align-items:center;background:#fff;padding:4px 8px;border-radius:8px}
+    .filter-label{font-size:.72rem;color:var(--muted);font-weight:700;margin-right:4px}
+    .filter-chip.active{background:var(--p);color:#fff;border-color:transparent}
+    .calendar-grid,.card{overflow:hidden;box-shadow:var(--shadow)}
+    .calendar-header,.calendar-days{display:grid;grid-template-columns:repeat(7,1fr)}
+    .calendar-header{background:#f1f5f9;padding:8px 0}.calendar-header span{text-align:center;color:var(--muted);font-size:.75rem;font-weight:700}
+    .calendar-day{min-height:78px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:4px;background:#fff}
+    .calendar-day:nth-child(7n){border-right:none}.calendar-day.other-month{background:#f8fafc;opacity:.5}.calendar-day.today{background:#eef2ff}
+    .day-number{font-weight:700;font-size:.78rem}.day-events{display:flex;flex-direction:column;gap:1px}
+    .event-chip{padding:1px 4px;border-radius:3px;font-size:.63rem;font-weight:600;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .main-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}.card{background:#fff;border-radius:12px;padding:16px}
+    .card-title{font-family:Nunito,sans-serif;font-weight:800;font-size:.95rem;margin-bottom:14px}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.form-group{margin-bottom:10px}.form-group label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:3px}
+    .btn-sm{background:var(--p);color:#fff;padding:8px 14px}.btn-danger{background:var(--danger);color:#fff;padding:8px 16px}.logout-btn,.clear-btn{font-size:.8rem}
+    .summary-card{background:linear-gradient(135deg,var(--p),var(--s));color:#fff}.summary-card .card-title,.summary-card .hint{color:#fff}
+    .summary-list{display:flex;flex-direction:column;gap:5px;max-height:280px;overflow-y:auto}.summary-item{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:rgba(255,255,255,.12);border-radius:6px;cursor:pointer}
+    .summary-item.total{background:rgba(255,255,255,.25);cursor:default}.summary-item .si-left{display:flex;align-items:center;gap:6px;min-width:0}.summary-item .si-dot{width:8px;height:8px;border-radius:50%}.summary-item .si-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.summary-item .si-fee,.fee-cell{font-family:'JetBrains Mono',monospace;color:var(--accent);font-weight:500}
+    table{width:100%;border-collapse:collapse;font-size:.85rem} th,td{padding:8px 10px;border-bottom:1px solid var(--border);text-align:left} th{background:#f1f5f9;color:var(--muted);font-size:.75rem;font-weight:700} .time-cell{font-family:'JetBrains Mono',monospace;color:var(--muted)}
+    .delete-btn{background:#fee2e2;color:var(--danger);border:0;padding:4px 8px;border-radius:4px;cursor:pointer}
+    .settings-card{max-width:480px;margin:0 auto}.settings-section{margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+    .class-item{display:flex;align-items:center;gap:8px;padding:6px 10px;background:#f8fafc;border-radius:6px;margin-bottom:6px}.class-color,.dot{display:inline-block;width:12px;height:12px;border-radius:3px}
+    @media (max-width:700px){.main-grid{grid-template-columns:1fr}.calendar-day{min-height:65px}.app-header{flex-direction:column;align-items:flex-start}.nav-tabs{width:100%}}
+  </style>
+</head>
+<body>
+  <div id="loginPage">
+    <div class="login-card">
+      <h1>📚 课时费计算器</h1>
+      <p class="subtitle" id="loginSubtitle">请输入登录密码</p>
+      <div class="login-error" id="loginError"></div>
+      <div id="cloudSetup" style="margin-bottom:10px">
+        <input type="password" id="cloudApiPwd" placeholder="云端密码（可选）">
+        <p class="hint" style="font-size:.8rem">留空则使用本地模式，数据保存在本机浏览器</p>
+      </div>
+      <input type="password" id="passwordInput" placeholder="输入登录密码" maxlength="20">
+      <input type="password" id="passwordInput2" placeholder="确认密码" maxlength="20" style="display:none">
+      <button onclick="handleLogin()">登录</button>
+      <div class="hint" id="loginHint" style="font-size:.8rem;margin-top:12px"></div>
+    </div>
+  </div>
+  <div id="mainApp">
+    <header class="app-header">
+      <h1>📚 课时费计算器 <span id="cloudStatus" style="display:none;font-size:.75rem;padding:3px 10px;border-radius:12px;background:rgba(239,68,68,.1);color:var(--danger)">☁️ 未连接</span></h1>
+      <nav class="nav-tabs">
+        <button class="nav-tab active" data-tab="calendar" onclick="switchTab('calendar')">📅 课表</button>
+        <button class="nav-tab" data-tab="records" onclick="switchTab('records')">📋 记录</button>
+        <button class="nav-tab" data-tab="settings" onclick="switchTab('settings')">⚙️ 设置</button>
+      </nav>
+      <button class="logout-btn" onclick="logout()">退出</button>
+    </header>
+    <div class="app-content">
+      <div id="calendarTab" class="tab-content active">
+        <div class="calendar-nav"><button onclick="calNav(-1)">←</button><span id="calMonth" class="calendar-month"></span><button onclick="calNav(1)">→</button></div>
+        <div id="calFilters" class="filter-row"></div>
+        <div class="calendar-grid"><div class="calendar-header"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div><div id="calendarDays" class="calendar-days"></div></div>
+      </div>
+      <div id="recordsTab" class="tab-content">
+        <div class="month-nav"><button onclick="recNav(-1)">←</button><span id="recMonth" class="month-display"></span><button onclick="recNav(1)">→</button></div>
+        <div id="recFilters" class="filter-row"></div>
+        <div class="records-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div>记录明细 <span id="recCount" style="color:var(--muted);font-size:.8rem"></span></div><button id="clearBtn" class="clear-btn" onclick="clearMonth()">清空当月</button></div>
+        <div class="main-grid">
+          <div class="card"><div class="card-title">新增记录</div><form id="recordForm"><div class="form-row"><div class="form-group"><label>日期</label><input id="recDate" type="date" required></div><div class="form-group"><label>辅导班</label><select id="recClass"><option value="">无归属</option></select></div></div><div class="form-row"><div class="form-group"><label>开始时间</label><input id="startTime" type="time"></div><div class="form-group"><label>结束时间</label><input id="endTime" type="time"></div></div><div class="form-row"><div class="form-group"><label>学生</label><input id="recStudent" list="stuList" required></div><div class="form-group"><label>单价</label><input id="recPrice" type="number" step="0.01" required></div></div><div class="form-group"><label>课时</label><input id="recHours" type="number" step="0.1"></div><button class="btn-primary" type="submit">保存记录</button></form><datalist id="stuList"></datalist></div>
+          <div class="card summary-card"><div class="card-title">本月汇总 <span class="hint">点击可筛选</span></div><div id="summaryList" class="summary-list"></div></div>
+        </div>
+        <div class="card"><div class="table-wrapper"><table><thead><tr><th>日期</th><th>时间</th><th>学生</th><th>辅导班</th><th>单价</th><th>课时</th><th>费用</th><th></th></tr></thead><tbody id="recBody"></tbody></table></div><div id="recEmpty" style="display:none;text-align:center;padding:30px;color:var(--muted)">暂无记录</div></div>
+      </div>
+      <div id="settingsTab" class="tab-content"><div class="card settings-card"><h2>⚙️ 设置</h2><div class="settings-section"><h3>辅导班管理</h3><div style="display:flex;gap:8px;margin-bottom:10px"><input id="newClassName" placeholder="输入辅导班名称"><button class="btn-sm" onclick="addClass()">添加</button></div><div id="classList"></div></div><div class="settings-section"><h3>密码</h3><div style="display:flex;flex-direction:column;gap:8px"><input id="oldPwd" type="password" placeholder="原密码"><input id="newPwd" type="password" placeholder="新密码"><input id="newPwd2" type="password" placeholder="确认新密码"><button class="btn-sm" onclick="changePassword()">修改密码</button></div></div><div class="settings-section"><h3>数据</h3><button class="btn-danger" onclick="clearAllData()">清空所有数据</button></div></div></div>
+    </div>
+  </div>
+  <script src="./initial-data.js"></script>
+  <script>
+    const STORAGE_KEY='tuition_records_v3', STUDENTS_KEY='tuition_students_v3', CLASSES_KEY='tuition_classes_v3', PWD_KEY='tuition_password_v3', CLOUD_CONFIG_KEY='tuition_cloud_v3';
+    const CLASS_COLORS=['#4F46E5','#7C3AED','#10B981','#F59E0B','#EF4444','#3B82F6','#EC4899','#8B5CF6','#06B6D4','#84CC16'];
+    const DEFAULT_API_URL='https://workbuddy-dv3.pages.dev';
+    let cloudConfig=null, syncStatus='idle', calYear=new Date().getFullYear(), calMonth=new Date().getMonth()+1, recYear=new Date().getFullYear(), recMonth=new Date().getMonth()+1, records=[], students={}, classes={}, calFilter={type:'all',value:''};
+    const hash=s=>{let h=0;for(let i=0;i<s.length;i++)h=((h<<5)-h)+s.charCodeAt(i),h&=h;return h.toString(16)}; const genId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2);
+    const getMonthKey=(y,m)=>`${y}-${String(m).padStart(2,'0')}`, fmtMonth=(y,m)=>`${y}年${m}月`, fmtDate=d=>{const dt=new Date(d);return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`}, fmtTime=t=>t?t.slice(0,5):'', fmtFee=n=>'¥'+n.toLocaleString('zh-CN'), calcHours=(s,e)=>{if(!s||!e)return 0; const [sh,sm]=s.split(':').map(Number),[eh,em]=e.split(':').map(Number); return Math.max(0,(eh*60+em-sh*60-sm)/60)};
+    const getCloudConfig=()=>cloudConfig||(cloudConfig=JSON.parse(localStorage.getItem(CLOUD_CONFIG_KEY)||'null'));
+    const isCloudMode=()=>!!getCloudConfig();
+    const getApiUrl=()=>getCloudConfig()?.apiUrl||DEFAULT_API_URL;
+    function loadData(){try{records=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')}catch{records=[]}try{students=JSON.parse(localStorage.getItem(STUDENTS_KEY)||'{}')}catch{students={}}try{classes=JSON.parse(localStorage.getItem(CLASSES_KEY)||'{}')}catch{classes={}}}
+    function seedFromInitialData(){if(localStorage.getItem(STORAGE_KEY)) return; const d=window.__INITIAL_DATA__||{records:[],students:{},classes:{}}; records=d.records||[]; students=d.students||{}; classes=d.classes||{}; saveData(false)}
+    function saveData(sync=true){localStorage.setItem(STORAGE_KEY,JSON.stringify(records));localStorage.setItem(STUDENTS_KEY,JSON.stringify(students));localStorage.setItem(CLASSES_KEY,JSON.stringify(classes));if(sync&&isCloudMode())saveDataToCloud()}
+    async function cloudRequest(method,path,body){const cfg=getCloudConfig(); if(!cfg) throw new Error('未配置云端'); const res=await fetch(getApiUrl()+path,{method,headers:{Authorization:'Bearer '+cfg.apiPwd,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined}); if(!res.ok) throw new Error(await res.text()); return res.json()}
+    async function saveDataToCloud(){if(!isCloudMode()) return; try{syncStatus='syncing';updateCloudStatusUI(); await cloudRequest('POST','/api',{records,students,classes}); syncStatus='idle'}catch{syncStatus='error'} updateCloudStatusUI()}
+    async function loadDataFromCloud(){if(!isCloudMode()) return; const data=await cloudRequest('GET','/api'); records=data.records||[]; students=data.students||{}; classes=data.classes||{}; saveData(false)}
+    function updateCloudStatusUI(){const el=document.getElementById('cloudStatus'); const cfg=getCloudConfig(); if(!cfg){el.style.display='none';return} el.style.display='inline-flex'; el.textContent=syncStatus==='syncing'?'☁️ 同步中...':syncStatus==='error'?'☁️ 同步失败':'☁️ 已连接'; el.style.background=syncStatus==='error'?'rgba(239,68,68,.1)':'rgba(16,185,129,.15)'; el.style.color=syncStatus==='error'?'#ef4444':'#10b981'}
+    const getClassColor=cid=>!cid||!classes[cid]?'#94A3B8':classes[cid].color, getClassName=cid=>!cid||!classes[cid]?'':classes[cid].name, getStudentColor=name=>{if(!students[name]) students[name]={lastPrice:null,color:['#4F46E5','#7C3AED','#10B981','#F59E0B','#EF4444','#3B82F6','#EC4899','#8B5CF6'][Object.keys(students).length%8]}; return students[name].color};
+    function isFirstUse(){return !localStorage.getItem(PWD_KEY)} function handleLogin(){const pwd=passwordInput.value, pwd2=passwordInput2, err=loginError; if(isFirstUse()){if(pwd.length<4){err.textContent='密码至少4位';return} if(pwd2.value!==pwd){err.textContent='两次密码不一致';return} localStorage.setItem(PWD_KEY,hash(pwd)); enterApp()} else {if(hash(pwd)===localStorage.getItem(PWD_KEY)) enterApp(); else {err.textContent='密码错误'; passwordInput.value=''}}}
+    async function enterApp(){loginPage.style.display='none'; mainApp.style.display='block'; loadData(); seedFromInitialData(); if(isCloudMode()) try{await loadDataFromCloud()}catch{} updateCloudStatusUI(); renderClassSelect(); renderClassList(); renderFilters(); renderCalendar(); renderRecords(); updateStats()}
+    function logout(){mainApp.style.display='none'; loginPage.style.display='flex'; passwordInput.value=''; loginError.textContent=''}
+    function updateStats(){recordCount.textContent=records.length; studentCount.textContent=Object.keys(students).length; classCount.textContent=Object.keys(classes).length}
+    function addClass(){const name=newClassName.value.trim(); if(!name) return alert('请输入辅导班名称'); const id=genId(); classes[id]={name,color:CLASS_COLORS[Object.keys(classes).length%CLASS_COLORS.length]}; saveData(); renderClassSelect(); renderClassList(); renderFilters(); updateStats(); newClassName.value=''}
+    function renderClassList(){classList.innerHTML=Object.entries(classes).map(([id,c])=>`<div class="class-item"><span class="class-color" style="background:${c.color}"></span><span class="class-name">${c.name}</span><button class="class-del btn-danger" data-classid="${id}" style="padding:4px 8px">🗑️</button></div>`).join('')||'<p style="color:var(--muted);font-size:.85rem">暂无辅导班</p>'; document.querySelectorAll('.class-del').forEach(btn=>btn.onclick=()=>{const cid=btn.dataset.classid; if(!confirm('删除后该辅导班的记录将变为"无归属"，确定删除？')) return; delete classes[cid]; records.forEach(r=>{if(r.classId===cid) r.classId=''}); saveData(); renderClassSelect(); renderClassList(); renderFilters(); renderCalendar(); renderRecords(); updateStats()})}
+    function renderClassSelect(){recClass.innerHTML='<option value="">无归属</option>'+Object.entries(classes).map(([id,c])=>`<option value="${id}">${c.name}</option>`).join('')}
+    function setFilter(type,value=''){calFilter=type==='all'?{type:'all',value:''}:type==='student'?{type:'student',value}:{type:'class',value}; renderFilters(); renderCalendar(); renderRecords()}
+    function renderFilters(){const uniqueStudents=[...new Set(records.map(r=>r.student))].sort(), classEntries=Object.entries(classes), noClassRecs=records.some(r=>!r.classId); const mk=(mode)=>{let h=`<div class="filter-section"><span class="filter-label">辅导班</span><span class="filter-chip ${calFilter.type==='all'?'active':''}" onclick="setFilter('all')">全部</span>`; if(noClassRecs)h+=`<span class="filter-chip ${calFilter.type==='class'&&calFilter.value==='_none_'?'active':''}" onclick="setFilter('class','_none_')">无归属</span>`; classEntries.forEach(([id,c])=>h+=`<span class="filter-chip ${calFilter.type==='class'&&calFilter.value===id?'active':''}" onclick="setFilter('class','${id}')"><span class="dot" style="background:${c.color}"></span>${c.name}</span>`); h+='</div><div class="filter-section"><span class="filter-label">学生</span><span class="filter-chip '+(calFilter.type==='all'?'active':'')+'" onclick="setFilter(\'all\')">全部</span>'; uniqueStudents.forEach(n=>h+=`<span class="filter-chip ${calFilter.type==='student'&&calFilter.value===n?'active':''}" onclick="setFilter('student','${n}')"><span class="dot" style="background:${getStudentColor(n)}"></span>${n}</span>`); return h+'</div>'}; calFilters.innerHTML=mk(); recFilters.innerHTML=mk(); }
+    function getCalFilteredRecords(recs){return recs.filter(r=>calFilter.type==='student'?r.student===calFilter.value:calFilter.type==='class'?(calFilter.value==='_none_'?!r.classId:r.classId===calFilter.value):true)}
+    function calNav(d){calMonth+=d; if(calMonth>12){calMonth=1;calYear++} if(calMonth<1){calMonth=12;calYear--} renderCalendar()}
+    function renderCalendar(){calMonthEl.textContent=fmtMonth(calYear,calMonth); const first=new Date(calYear,calMonth-1,1), last=new Date(calYear,calMonth,0), startDow=first.getDay(), daysInMonth=last.getDate(), today=new Date(), todayStr=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`, monthKey=getMonthKey(calYear,calMonth); const monthRecs=getCalFilteredRecords(records.filter(r=>r.month===monthKey)).sort((a,b)=>a.date.localeCompare(b.date)||(a.startTime||'').localeCompare(b.startTime||'')); const dayMap={}; monthRecs.forEach(r=>((dayMap[r.date]||(dayMap[r.date]=[])).push(r))); let html=''; const prevDays=new Date(calYear,calMonth-1,0).getDate(); for(let i=startDow-1;i>=0;i--) html+=`<div class="calendar-day other-month"><div class="day-number">${prevDays-i}</div></div>`; for(let d=1;d<=daysInMonth;d++){const ds=`${calYear}-${String(calMonth).padStart(2,'0')}-${String(d).padStart(2,'0')}`; const evs=dayMap[ds]||[]; html+=`<div class="calendar-day${ds===todayStr?' today':''}"><div class="day-number">${d}</div><div class="day-events">${evs.map(ev=>`<div class="event-chip" style="background:${getStudentColor(ev.student)}" title="${ev.student} ${fmtTime(ev.startTime)} ${ev.hours}小时">${ev.student} ${fmtTime(ev.startTime)}${getClassName(ev.classId)?`<div style="font-size:.58rem;opacity:.8">·${getClassName(ev.classId)}</div>`:''}</div>`).join('')}</div></div>`} const rem=(startDow+daysInMonth)%7; for(let i=1;i<=(rem===0?0:7-rem);i++) html+=`<div class="calendar-day other-month"><div class="day-number">${i}</div></div>`; calendarDays.innerHTML=html}
+    function recNav(d){recMonth+=d; if(recMonth>12){recMonth=1;recYear++} if(recMonth<1){recMonth=12;recYear--} renderRecords()}
+    function renderRecords(){recMonthEl.textContent=fmtMonth(recYear,recMonth); const monthRecs=records.filter(r=>r.month===getMonthKey(recYear,recMonth)), filtered=getCalFilteredRecords(monthRecs), map={}, sum=summaryList; let totalH=0,totalF=0; filtered.forEach(r=>{const fee=r.pricePerHour*r.hours; totalH+=r.hours; totalF+=fee; (map[r.student]||(map[r.student]={h:0,f:0,color:getStudentColor(r.student),classes:{}})).h+=r.hours; map[r.student].f+=fee; const cid=r.classId||'_none_'; (map[r.student].classes[cid]||(map[r.student].classes[cid]={h:0,f:0})).h+=r.hours; map[r.student].classes[cid].f+=fee}); const entries=Object.entries(map).sort((a,b)=>b[1].f-a[1].f); sum.innerHTML=entries.length?entries.map(([name,d])=>`<div class="summary-item" onclick="setFilter('student','${name}')"><div class="si-left"><span class="si-dot" style="background:${d.color}"></span><span class="si-name">${name}</span><span class="si-hours">${d.h}h</span></div><span class="si-fee">${fmtFee(d.f)}</span></div>`).join('')+'<div class="summary-item total"><div class="si-left"><span class="si-name">合计</span><span class="si-hours">'+totalH+'h</span></div><span class="si-fee">'+fmtFee(totalF)+'</span></div>':'<div style="text-align:center;padding:20px;color:rgba(255,255,255,.7)">暂无费用数据</div>'; if(!filtered.length){recBody.innerHTML=''; recEmpty.style.display='block'; clearBtn.style.display='none'; recCount.textContent=''; return} recEmpty.style.display='none'; clearBtn.style.display='block'; recCount.textContent=`共 ${filtered.length} 条`; recBody.innerHTML=[...filtered].sort((a,b)=>b.date.localeCompare(a.date)||(b.startTime||'').localeCompare(a.startTime||'')).map(r=>`<tr><td>${fmtDate(r.date)}</td><td class="time-cell">${fmtTime(r.startTime)} - ${fmtTime(r.endTime)}</td><td>${r.student}</td><td>${getClassName(r.classId)?`<span style="display:inline-block;padding:1px 6px;border-radius:4px;color:#fff;background:${getClassColor(r.classId)}">${getClassName(r.classId)}</span>`:'<span style="color:#94A3B8;font-size:.75rem">无</span>'}</td><td style="color:var(--muted)">¥${r.pricePerHour}/时</td><td>${r.hours}h</td><td class="fee-cell">${fmtFee(r.pricePerHour*r.hours)}</td><td><button class="delete-btn" data-id="${r.id}">🗑️</button></td></tr>`).join(''); document.querySelectorAll('#recBody .delete-btn').forEach(btn=>btn.onclick=()=>{const id=btn.dataset.id; if(!confirm('确定删除？')) return; records=records.filter(r=>r.id!==id); saveData(); renderCalendar(); renderRecords(); updateStats()}); stuList.innerHTML=''; [...new Set(records.map(r=>r.student))].forEach(n=>{const o=document.createElement('option'); o.value=n; stuList.appendChild(o)})}
+    function clearMonth(){const key=getMonthKey(recYear,recMonth), monthRecs=records.filter(r=>r.month===key); if(!monthRecs.length) return; if(!confirm(`清空 ${fmtMonth(recYear,recMonth)} 的 ${monthRecs.length} 条记录？`)) return; if(!confirm('不可恢复，再次确认！')) return; records=records.filter(r=>r.month!==key); saveData(); renderFilters(); renderCalendar(); renderRecords(); updateStats()}
+    function changePassword(){if(hash(oldPwd.value)!==localStorage.getItem(PWD_KEY)) return alert('原密码错误'); if(newPwd.value.length<4) return alert('新密码至少4位'); if(newPwd.value!==newPwd2.value) return alert('两次密码不一致'); localStorage.setItem(PWD_KEY,hash(newPwd.value)); alert('密码修改成功'); [oldPwd,newPwd,newPwd2].forEach(i=>i.value='')}
+    function clearAllData(){if(!confirm('确定清空所有数据？此操作不可恢复！')) return; if(!confirm('再次确认：所有记录将被永久删除！')) return; localStorage.removeItem(STORAGE_KEY);localStorage.removeItem(STUDENTS_KEY);localStorage.removeItem(CLASSES_KEY);localStorage.removeItem(CLOUD_CONFIG_KEY); records=[];students={};classes={};cloudConfig=null; calFilter={type:'all',value:''}; updateCloudStatusUI(); renderFilters(); renderClassSelect(); renderClassList(); renderCalendar(); renderRecords(); updateStats(); alert('已清空')}
+    function switchTab(tab){document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active')); document.querySelector(`[data-tab="${tab}"]`).classList.add('active'); document.getElementById(tab+'Tab').classList.add('active')}
+    function initLogin(){const first=isFirstUse(); loginSubtitle.textContent=first?'首次使用，请设置密码':'请输入密码登录'; loginHint.textContent=first?'':'忘记密码需清除浏览器数据'; passwordInput2.style.display=first?'block':'none'; ['passwordInput','passwordInput2'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter') handleLogin()})); recDate.value=new Date().toISOString().split('T')[0]; if(getCloudConfig()) cloudSetup.style.display='none'; const pwd=new URLSearchParams(location.search).get('pwd'); if(pwd&&!getCloudConfig()){cloudConfig={apiUrl:DEFAULT_API_URL,apiPwd:pwd}; localStorage.setItem(CLOUD_CONFIG_KEY,JSON.stringify(cloudConfig)); history.replaceState({},'',location.pathname); cloudSetup.style.display='none'; updateCloudStatusUI()}}
+    recordForm.addEventListener('submit',e=>{e.preventDefault(); const date=recDate.value, startTime=startTime.value, endTime=endTime.value, classId=recClass.value, student=recStudent.value.trim(), price=parseFloat(recPrice.value); let hours=parseFloat(recHours.value); const calcH=calcHours(startTime,endTime); if(calcH>0) hours=calcH; if(!date||!student||isNaN(price)||isNaN(hours)) return alert('请填写完整信息'); const rec={id:genId(),date,startTime,endTime,classId,student,pricePerHour:price,hours,month:getMonthKey(new Date(date).getFullYear(),new Date(date).getMonth()+1)}; records.push(rec); students[student]={lastPrice:price,color:students[student]?students[student].color:getStudentColor(student)}; saveData(); renderFilters(); renderCalendar(); renderRecords(); updateStats(); recHours.value=''; recStudent.value=student; recPrice.value=price; recStudent.focus()}); recStudent.addEventListener('change',function(){const n=this.value.trim(); if(n&&students[n]?.lastPrice) recPrice.value=students[n].lastPrice}); initLogin();
+  </script>
+</body>
+</html>
